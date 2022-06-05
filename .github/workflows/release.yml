@@ -1,0 +1,30 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "llvmorg-*"
+
+jobs:
+  create_release:
+    name: Build LLVM on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-2019, windows-2022]
+    steps:
+    - name: Checkout by Pushing Tags
+      run: git clone --branch ${{ github.ref_name }} --depth 1 https://github.com/llvm/llvm-project.git
+    - name: Build and Package LLVM
+      run: |
+        cmake -Thost=x64 -B build -DCMAKE_BUILD_TYPE=Release -DCPACK_GENERATOR=ZIP -DLLVM_TARGETS_TO_BUILD=X86 -DLLVM_INCLUDE_TESTS=OFF llvm-project\\llvm
+        cmake --build build --config Release --target package
+    - name: Rename Artifacts
+      run: |
+        "${{ github.ref_name }}" -match "\d+\.\d+\.\d+"
+        $llvm_version = $matches[0]
+        mv build/LLVM-$llvm_version-win64.zip build/llvm-$llvm_version-${{ matrix.os }}.zip
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: build/llvm-*.zip
