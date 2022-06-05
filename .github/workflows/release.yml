@@ -22,8 +22,8 @@ jobs:
     - name: Rename Artifacts
       run: |
         "${{ github.ref_name }}" -match "\d+\.\d+\.\d+"
-        $llvm_version = $matches[0]
-        mv build/LLVM-$llvm_version-win64.zip build/llvm-$llvm_version-${{ matrix.os }}.zip
+        $LLVM_VERSION = $matches[0]
+        mv build/LLVM-$LLVM_VERSION-win64.zip build/llvm-$LLVM_VERSION-${{ matrix.os }}.zip
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
